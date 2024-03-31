@@ -16,11 +16,11 @@ const Navbar = () => {
       <ul className="nav-menu">
         <li onClick={()=>{setMenu("shops")}}><Link style={{textDecoration:'none'}}  to='/'>Shop</Link>{menu === "shop" ?<hr/>:<></>} </li>
 
-        <li onClick={() => { setMenu("mens") }} ><Link style={{textDecoration:'none'}}  to="/mens">Mens </Link> {menu === "mens"?<hr />:<></>}</li>
+        <li onClick={() => { setMenu("men") }} ><Link style={{textDecoration:'none'}}  to="/mens">Mens </Link> {menu === "men"?<hr />:<></>}</li>
 
-        <li onClick={() => { setMenu("womens");}}><Link style={{textDecoration:'none'}} to="/womens">Womens</Link >{menu === "womens"?<hr />:<></>}</li>
+        <li onClick={() => { setMenu("women");}}><Link style={{textDecoration:'none'}} to="/womens">Womens</Link >{menu === "women"?<hr />:<></>}</li>
 
-        <li onClick={() => {setMenu("kids");}}><Link style={{textDecoration:'none'}}  to="/kids">Kids</Link> {menu === "kids"?<hr />:<></>}</li>
+        <li onClick={() => {setMenu("kid");}}><Link style={{textDecoration:'none'}}  to="/kids">Kids</Link> {menu === "kid"?<hr />:<></>}</li>
 
         <li onClick={() => { setMenu("rent-dress-here");}}><Link  style={{textDecoration:'none'}} to="/rent-dress-here">Rent-Dress-Here </Link> {menu === "rent-dress-here"?<hr/>:<></>}</li>
       </ul>
