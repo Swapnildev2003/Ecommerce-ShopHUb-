@@ -1,8 +1,9 @@
 .offers{
+    justify-content: center;
     width: 65%;
     height: 85vh;
     display: flex;
-    margin: 100px;
+    margin : 100px;
     padding: 0 140px;
    /* margin-bottom: 150px;*/
     background: linear-gradient(180deg, #deee67, #1c75f222 60%);

@@ -10,6 +10,7 @@ import Footer from "./components/Footer/Footer";
 import men_banner from "./components/Assets/banner_mens.png";
 import women_banner from "./components/Assets/banner_women.png";
 import kid_banner from "./components/Assets/banner_kids.png";
+import rent_banner from "./components/Assets/banner_rent_dresses.jpeg"
 
 function App() {
   return (
@@ -32,7 +33,7 @@ function App() {
           />
           <Route
             path="/rent-dress-here"
-            element={<ShopCategory category="rent-dress-here" />}
+            element={<ShopCategory banner={rent_banner} category="rent-dress-here" />}
           />
           <Route path="product" element={<Product />}>
             <Route path=":productId" element={<Product />} />
