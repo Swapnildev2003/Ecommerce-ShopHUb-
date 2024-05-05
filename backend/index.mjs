@@ -5,17 +5,19 @@ import multer from 'multer';
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import cors from 'cors';
+import dotenv from "dotenv"
 import { constants } from 'buffer';
 const app = express();
+dotenv.config();
+
 const port = 4000;
 app.use(express.json());
 app.use(cors());
 // Allow Cross-Origin Resource Sharing (CORS)
 
 //databave connection
-
-// mongoose.connect("mongodb+srv://swapnilsks123ss:rkQYXQ5xszk8OE64@cluster0.4egkvfz.mongodb.net/Ecommerce")
-mongoose.connect("mongodb+srv://swapnilsks123ss:rkQYXQ5xszk8OE64@cluster0.4egkvfz.mongodb.net/Ecommerce", { useNewUrlParser: true, useUnifiedTopology: true });
+ const URI = process.env.DB_URI
+mongoose.connect(URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
