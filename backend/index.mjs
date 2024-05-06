@@ -38,7 +38,7 @@ var storage = multer.diskStorage({
     destination: './upload/images', // Folder to store the uploaded files in  
     filename: function (req, file, cb) {
         // Generate a unique file name using file's original name with the extension
-        return cb(null, `${file.filename}_$(Date.now())_${path.extname(file.originalname)}`);
+        return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
     }
 })
 
@@ -65,10 +65,12 @@ const Product = mongoose.model("Product", {
         required: true
     },
     image: {
-        type: String
+        type: String,
+        required: true
     },
     category: {
         type: String,
+        required: true
 
     },
     new_price: {
@@ -121,7 +123,7 @@ app.post("/addProduct", async (req, res) => {
 })
 
 //Schema for creating user model
-const User = mongoose.model('User', {
+const Users = mongoose.model('User', {
     name: {
         type: String,
     },
@@ -137,7 +139,7 @@ const User = mongoose.model('User', {
     },
     date: {
         type: Date,
-        default: Date.now(),
+        default: Date.now,
     }
 });
 
@@ -158,7 +160,7 @@ app.get('/allProds', async (req, res) => {
 })
 //Creating Endpoint for registering the user
 app.post('/signup', async (req, res) => {
-    let check = await User.findOne({ email: req.body.email })
+    let check = await Users.findOne({ email: req.body.email })
     if (check) {
         return res.status(400).json({ success: false, errors: "existing user" })
     }
@@ -167,7 +169,7 @@ app.post('/signup', async (req, res) => {
         cart[i] = 0;
 
     }
-    const user = new User({
+    const user = new Users({
         name: req.body.username,
         email: req.body.email,
         password: req.body.password,
@@ -183,7 +185,7 @@ app.post('/signup', async (req, res) => {
     res.json({ success: true, token })
 })
 app.post('/login', async (req, res) => {
-    let user = await User.findOne({ email: req.body.email });
+    let user = await Users.findOne({ email: req.body.email });
     if (user) {
         const passCompare = req.body.password === user.password;
         if (passCompare) {
@@ -212,7 +214,7 @@ app.get('/newcollections', async (req, res) => {
 })
 
 app.get("/popularinwomen", async (req, res) => {
-    let products = await Product.find({ category: "women" })
+    let products = await Product.find({ category: "Women" })
     let popular_in_women = products.slice(0, 4);
     console.log("Popular in women fetched")
     res.send(popular_in_women)
@@ -238,8 +240,8 @@ app.post('/addtocart', fetchUser, async (req, res) => {
     let userData = await Users.findOne({ _id: req.user.id });
     if (userData.cartData[req.body.itemId] > 0)
         userData.cartData[req.body.itemId] += 1;
-    await User.findByIdAndUpdate({ _id: req.user.id }, { cartData: userData.cartData })
-    res.status(200)("Removed")
+    await Users.findByIdAndUpdate({ _id: req.user.id }, { cartData: userData.cartData })
+    res.status(200)("Added")
 
 })
 
@@ -253,9 +255,10 @@ app.post('/getcart', fetchUser, async (req, res) => {
 app.post("/removefromcart", fetchUser, async (req, res) => {
     console.log("removed", req.body.itemId)
     let userData = await Users.findOne({ _id: req.user.id });
-    userData.cartData[req.body.itemId] -= 1;
-    await User.findByIdAndUpdate({ _id: req.user.id }, { cartData: userData.cartData })
-    // app.post('/addtocart', fetchUser,)
+    if (userData.cartData[req.body.itemId] > 0)
+        userData.cartData[req.body.itemId] -= 1;
+    await Users.findByIdAndUpdate({ _id: req.user.id }, { cartData: userData.cartData })
+    res.status(200)("Added")
 })
 app.listen(port, (error) => {
     if (!error) {
