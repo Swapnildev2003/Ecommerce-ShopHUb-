@@ -8,17 +8,16 @@ import cors from 'cors';
 import dotenv from "dotenv"
 import { constants } from 'buffer';
 const app = express();
-dotenv.config();
-
 const port = 4000;
 app.use(express.json());
 app.use(cors());
 // Allow Cross-Origin Resource Sharing (CORS)
 
 //databave connection
- const URI = process.env.DB_URI
-mongoose.connect(URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
+// mongoose.connect("mongodb+srv://swapnilsks123ss:rkQYXQ5xszk8OE64@cluster0.4egkvfz.mongodb.net/Ecommerce")
+const URI = process.env.DB_URI
+mongoose.connect(URI, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', function () {
@@ -214,30 +213,34 @@ app.get('/newcollections', async (req, res) => {
 })
 
 app.get("/popularinwomen", async (req, res) => {
-    let products = await Product.find({ category: "Women" })
+    let products = await Product.find({ category: "women" })
     let popular_in_women = products.slice(0, 4);
     console.log("Popular in women fetched")
     res.send(popular_in_women)
 })
 const fetchUser = async (req, res, next) => {
-    const token = req.header('auth-token')
+    const token = req.header('auth-token');
     if (!token) {
-        return res.status(401).json({ msg: 'No Token Provided' })
+        return res.status(401).json({ msg: 'No Token Provided' });
     } else {
         try {
             const verifiedToken = jwt.verify(token, 'secret_ecom');
+            // Assuming the payload structure contains user.id
             req.user = verifiedToken;
+            // res.status(200).json({ verified });
             next();
         } catch (err) {
-            res.status(401).json({ msg: 'Token is not Valid' })
+            res.status(401).json({ msg: 'Token is not Valid' });
         }
     }
-}
+};
+
 app.post('/addtocart', fetchUser, async (req, res) => {
     // setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }))
     // console.log(cartItems)
     console.log("Added", req.body.itemId)
     let userData = await Users.findOne({ _id: req.user.id });
+    console.log(req.user.id)
     if (userData.cartData[req.body.itemId] > 0)
         userData.cartData[req.body.itemId] += 1;
     await Users.findByIdAndUpdate({ _id: req.user.id }, { cartData: userData.cartData })

@@ -4,7 +4,7 @@ import React, { createContext, useEffect, useState } from "react";
 export const ShopContext = createContext(null);
 const getDefaultCart = () => {
   let cart = {};
-  for (let index = 0; index < 2; index++) {
+  for (let index = 0; index < 300 + 1; index++) {
     cart[index] = 0;
 
   }
@@ -18,7 +18,7 @@ const ShopContextProvider = (props) => {
   useEffect(() => {
     fetch('http://localhost:4000/allProds')
       .then((response) => response.json())
-      .then((data) => { setAll_Product(data); })
+      .then((data) => { setAll_Product(data); console.log(data) })
 
     if (localStorage.getItem("productsInCart")) {
       fetch('http://localhost:4000/getcart', {
@@ -47,16 +47,24 @@ const ShopContextProvider = (props) => {
           Accept: 'application/form-data',
           'auth-token': `${localStorage.getItem('auth-token')}`,
           'Content-Type': 'application/json',
-
         },
         body: JSON.stringify({ "itemId": itemId })
       })
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return res.json();
+        })
         .then(data => {
-          console.log(data)
+          console.log(data, "hi")
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
         });
     }
   }
+
   const removeFromCart = (itemId) => {
     setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }))
     if (localStorage.getItem('auth-token')) {
