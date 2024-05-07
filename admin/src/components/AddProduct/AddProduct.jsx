@@ -5,7 +5,7 @@ import upload_area from "../../assets/upload_area.svg";
 
 const AddProduct = () => {
     const [image, setImage] = React.useState(false);
-    const [productDetail, setProductDetail] = React.useState({ name: "", image: "", category: "Women", new_price: "", old_price: "" });  // product detail object to store the input
+    const [productDetail, setProductDetail] = React.useState({ name: "", image: "", category: "women", new_price: "", old_price: "" });  // product detail object to store the input
 
     const imageHandler = (e) => {
         setImage(e.target.files[0]);
@@ -70,9 +70,9 @@ const AddProduct = () => {
             <div className='addproduct-itemfield'>
                 <p>Product Category</p>
                 <select value={productDetail.category} onChange={changeHandler} name='category' className='add-product-selector'>
-                    <option value='Women'>women</option>
-                    <option value='Men'>men</option>
-                    <option value='Kid'>kid</option>
+                    <option value='women'>women</option>
+                    <option value='men'>men</option>
+                    <option value='kid'>kid</option>
                 </select>
             </div>
             <div className='addproduct-itemfield'>

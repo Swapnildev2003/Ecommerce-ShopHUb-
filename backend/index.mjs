@@ -11,11 +11,12 @@ const app = express();
 const port = 4000;
 app.use(express.json());
 app.use(cors());
+dotenv.config()
 // Allow Cross-Origin Resource Sharing (CORS)
 
 //databave connection
 
-// mongoose.connect("mongodb+srv://swapnilsks123ss:rkQYXQ5xszk8OE64@cluster0.4egkvfz.mongodb.net/Ecommerce")
+
 const URI = process.env.DB_URI
 mongoose.connect(URI, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
