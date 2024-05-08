@@ -73,6 +73,7 @@ const AddProduct = () => {
                     <option value='women'>women</option>
                     <option value='men'>men</option>
                     <option value='kid'>kid</option>
+                    <option value='rent-dress-here'>rent-dress-here</option>
                 </select>
             </div>
             <div className='addproduct-itemfield'>
