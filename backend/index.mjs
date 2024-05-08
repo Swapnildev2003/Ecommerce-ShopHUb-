@@ -17,7 +17,8 @@ dotenv.config()
 //databave connection
 
 
-const URI = process.env.DB_URI
+const URI = 'mongodb+srv://swapnilsks123ss:rkQYXQ5xszk8OE64@cluster0.4egkvfz.mongodb.net/Ecommerce'
+console.log('MongoDB connection URI:', URI);
 mongoose.connect(URI, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
