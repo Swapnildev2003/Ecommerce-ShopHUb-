@@ -5,73 +5,105 @@
   gap: 5px;
   margin-bottom: 100px;
 }
+
 .new-collections h1 {
   display: flex;
   color: #171717;
   font-size: 45px;
   font-weight: 550;
   text-align: center;
-  
+
 }
+
 .new-collections hr {
   width: 30%;
   height: 2px;
   border-radius: 10px;
-  background: #252525;
+  background: #1dff09;
 }
+
 .collections {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   margin-top: 50px;
   gap: 30px;
+  /* overflow-y: scroll; */
+  scrollbar-width: 10px;
+  /* scrollbar-color: transparent transparent; */
 }
+
+.collections::-webkit-scrollbar {
+  width: 8px;
+}
+
+.collections::-webkit-scrollbar-track {
+  background: transparent;
+  /* Change this to desired background color */
+}
+
+.collections::-webkit-scrollbar-thumb {
+  background: #11f1f1;
+  /* Change this to desired scrollbar color */
+  border-radius: 4px;
+}
+
+
 @media (max-width: 1280px) {
-  
+
   .new-collections h1 {
     font-size: 40px;
   }
+
   .new-collections hr {
     width: 160px;
     height: 4px;
   }
-  .collections  {
+
+  .collections {
     gap: 20px;
     margin-top: 30px;
   }
 }
+
 @media (max-width: 1024px) {
- 
+
   .new-collections h1 {
     font-size: 30px;
   }
+
   .new-collections hr {
     width: 120px;
     height: 3px;
   }
-  .collections  {
+
+  .collections {
     gap: 15px;
     margin-top: 20px;
   }
 }
+
 @media (max-width: 800px) {
   .new-collections {
     gap: 6px;
   }
+
   .new-collections h1 {
     font-size: 20px;
   }
+
   .new-collections hr {
     width: 100px;
   }
-  .collections  {
+
+  .collections {
     gap: 5px;
   }
 }
+
 @media (max-width: 500px) {
-  .collections  {
+  .collections {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
   }
 }
-
