@@ -18,7 +18,7 @@ const ShopContextProvider = (props) => {
   useEffect(() => {
     fetch('http://localhost:4000/allProds')
       .then((response) => response.json())
-      .then((data) => { setAll_Product(data); console.log(data) })
+      .then((data) => { setAll_Product(data); console.log(data, "hi") })
 
     if (localStorage.getItem("productsInCart")) {
       fetch('http://localhost:4000/getcart', {
@@ -34,7 +34,7 @@ const ShopContextProvider = (props) => {
       })
     }
 
-  }, []);
+  }, [all_product.length]);
 
   const addToCart = (itemId) => {
     setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }))
