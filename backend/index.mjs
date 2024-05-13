@@ -1,18 +1,137 @@
-
+import Razorpay from "razorpay"
 import express from 'express';
 import mongoose from 'mongoose';
 import multer from 'multer';
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import cors from 'cors';
-import dotenv from "dotenv"
+import dotenv from "dotenv";
+import PDFDocument from 'pdfkit';
+
+import fs from 'fs';
+
 import { constants } from 'buffer';
+
+import nodemailer from "nodemailer"
 const app = express();
 const port = 4000;
 app.use(express.json());
-app.use(cors());
+app.use(cors());// Allow Cross-Origin Resource Sharing (CORS)
 dotenv.config()
-// Allow Cross-Origin Resource Sharing (CORS)
+
+// app.get("/recentlyAddedUser", async (req, res) => {
+//     try {
+//         // Find the recently added user by sorting the documents based on the date field in descending order
+//         const recentlyAddedUser = await Users.findOne().sort({ date: -1 });
+
+//         if (!recentlyAddedUser) {
+//             return res.status(404).json({ error: "No users found" });
+//         }
+
+//         // Send the recently added user data as a JSON response
+//         res.status(200).json(recentlyAddedUser);
+//     } catch (error) {
+//         console.error("Error occurred while fetching recently added user:", error);
+//         // Send an error response if there's an issue
+//         res.status(500).json({ error: "Internal Server Error" });
+//     }
+// });
+//Payment Gateway Connection
+
+app.post("/checkout", async (req, res) => {
+    const obj = req.body;
+    console.log(obj)
+    res.status(200).json({
+        "response": {
+            "Status": "Item order successfully",
+            "Info": "Order receipt sent to your email",
+            obj
+        }
+
+    })
+    console.log("Data sent Successfullly")
+
+    sendMail(obj);
+
+
+
+});
+async function sendMail(obj) {
+    try {
+        // Calculate total amount payable in dollars
+        const totalAmountDollars = obj.reduce((total, item) => total + parseFloat(item.new_price), 0);
+
+        // Convert total amount from dollars to rupees (considering 1 USD = 75 INR for example)
+        const conversionRate = 75; // Example conversion rate: 1 USD = 75 INR
+        const totalAmountRupees = totalAmountDollars * conversionRate;
+
+        // Create a PDF document
+        const doc = new PDFDocument();
+        doc.pipe(fs.createWriteStream('receipt.pdf'));
+
+        // Set up PDF styling
+        doc.font('Helvetica-Bold');
+        doc.fontSize(24);
+        doc.text('Ordered Items Receipt', { align: 'center' });
+        doc.moveDown();
+
+        // Write content to the PDF
+        doc.fontSize(18);
+        obj.forEach((item, index) => {
+            const imageUrl = item.image.substring(7)
+            doc.fillColor('#333').text(`Item ${index + 1}:`, { continued: true }).fillColor('#666').text(item.name);
+            doc.fillColor('#333').text(`ID: ${item.id}`);
+            doc.fillColor('#333').text(`Price: ${item.new_price}`);
+            doc.fillColor('#333').text(`Image: ${imageUrl}`);
+            doc.moveDown();
+        });
+
+        // Display total amount payable in rupees
+        doc.fillColor('#333').text(`Total Amount Payable: ₹${totalAmountRupees.toFixed(2)}`, { align: 'right' });
+
+        // End the PDF document
+        doc.end();
+
+        // Create a Nodemailer transporter
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'harshmultiuser@gmail.com',
+                pass: 'hrhuqcjhgpnvbxlc'
+            }
+        });
+
+        // Construct the email content
+        const mailOptions = {
+            from: 'harshmultiuser@gmail.com',
+            to: 'swapnildev001@gmail.com',
+            subject: 'Products Information from Shophub',
+            html: `
+            <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
+                <p>Dear Customer,</p>
+                <p>We are delighted to inform you about the following purchases:</p>
+                <p>Please find the attached PDF receipt for your ordered items.</p>
+                <p>Total Amount Payable: ₹${totalAmountRupees.toFixed(2)}</p>
+                <p>Thank you for choosing Shophub!</p>
+                <p><strong>Your items will be dispatched within 0-7 business days.</strong></p>
+            </div>
+        `,
+            attachments: [
+                {
+                    filename: 'receipt.pdf',
+                    path: 'receipt.pdf'
+                }
+            ]
+        };
+
+        // Send email with PDF attachment
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully:', info.response);
+    } catch (error) {
+        console.error('Error occurred while sending email:', error);
+    }
+}
+
 
 //databave connection
 
@@ -39,7 +158,8 @@ var storage = multer.diskStorage({
     destination: './upload/images', // Folder to store the uploaded files in  
     filename: function (req, file, cb) {
         // Generate a unique file name using file's original name with the extension
-        return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
+        return cb(null, `${file.fieldname}_${Date.now()
+            }${path.extname(file.originalname)} `);
     }
 })
 
