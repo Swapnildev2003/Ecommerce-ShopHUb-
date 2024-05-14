@@ -15,49 +15,62 @@ import nodemailer from "nodemailer";
 const app = express();
 const port = 4000;
 app.use(express.json());
-app.use(cors()); // Allow Cross-Origin Resource Sharing (CORS)
-dotenv.config();
-
-app.get("/recentlyAddedUser", async (req, res) => {
+app.use(cors());// Allow Cross-Origin Resource Sharing (CORS)
+dotenv.config()
+const online = async () => {
   try {
     // Find the recently added user by sorting the documents based on the date field in descending order
     const recentlyAddedUser = await Users.findOne().sort({ date: -1 });
 
     if (!recentlyAddedUser) {
+      console.error("No users found");
+      return null; // Return null if no user found
+    }
+
+    // Return the email of the recently added user
+    return recentlyAddedUser.email;
+  } catch (error) {
+    console.error("Error occurred while fetching recently added user:", error);
+    throw error; // Throw the error to be caught by the caller
+  }
+};
+
+app.post("/checkout", async (req, res) => {
+  try {
+    // Get the email of the recently added user
+    const userEmail = await online();
+    console.log(userEmail)
+
+    if (!userEmail) {
       return res.status(404).json({ error: "No users found" });
     }
 
-    // Send the recently added user data as a JSON response
-    res.status(200).json(recentlyAddedUser);
+    const obj = req.body;
+    console.log(obj);
+
+    // Send response to the client
+    res.status(200).json({
+      response: {
+        Status: "Item order successfully",
+        Info: "Order receipt sent to your email",
+        obj
+      }
+    });
+
+    console.log("Data sent successfully");
+
+    // Call the function to send email with the user's email
+    sendMail(obj, userEmail);
   } catch (error) {
-    console.error("Error occurred while fetching recently added user:", error);
-    // Send an error response if there's an issue
+    console.error("Error occurred during checkout:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-// Payment Gateway Connection
 
-app.post("/checkout", async (req, res) => {
-  const obj = req.body;
-  console.log(obj);
-  res.status(200).json({
-    response: {
-      Status: "Item order successfully",
-      Info: "Order receipt sent to your email",
-      obj,
-    },
-  });
-  console.log("Data sent Successfullly");
-
-  sendMail(obj);
-});
-async function sendMail(obj) {
+async function sendMail(obj, userEmail) {
   try {
     // Calculate total amount payable in dollars
-    const totalAmountDollars = obj.reduce(
-      (total, item) => total + parseFloat(item.new_price),
-      0
-    );
+    const totalAmountDollars = obj.reduce((total, item) => total + parseFloat(item.new_price), 0);
 
     // Convert total amount from dollars to rupees (considering 1 USD = 75 INR for example)
     const conversionRate = 75; // Example conversion rate: 1 USD = 75 INR
@@ -109,9 +122,9 @@ async function sendMail(obj) {
 
     // Construct the email content
     const mailOptions = {
-      from: "harshmultiuser@gmail.com",
-      to: "navyasrivastava1212@gmail.com",
-      subject: "Products Information from Shophub",
+      from: 'harshmultiuser@gmail.com',
+      to: `${userEmail}`,
+      subject: 'Products Information from Shophub',
       html: `
             <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
                 <p>Dear Customer,</p>
@@ -283,31 +296,33 @@ app.get("/allProds", async (req, res) => {
   res.send(data);
 });
 //Creating Endpoint for registering the user
-app.post("/signup", async (req, res) => {
-  let check = await Users.findOne({ email: req.body.email });
+app.post('/signup', async (req, res) => {
+  let check = await Users.findOne({ email: req.body.email })
   if (check) {
-    return res.status(400).json({ success: false, errors: "existing user" });
+    return res.status(400).json({ success: false, errors: "existing user" })
   }
-  let cart = {};
+  let cart = {}
   for (let i = 0; i < 300; i++) {
     cart[i] = 0;
+
   }
   const user = new Users({
     name: req.body.username,
     email: req.body.email,
     password: req.body.password,
     cartData: cart,
-  });
+  })
   await user.save();
   const data = {
     user: {
       id: user.id,
-    },
-  };
-  const token = jwt.sign(data, "secret_ecom");
-  res.json({ success: true, token });
-});
-app.post("/login", async (req, res) => {
+    }
+  }
+  const token = jwt.sign(data, 'secret_ecom');
+  res.status(200).json({ success: true, token })
+  console.log("User added successfully")
+})
+app.post('/login', async (req, res) => {
   let user = await Users.findOne({ email: req.body.email });
   if (user) {
     const passCompare = req.body.password === user.password;
@@ -315,23 +330,26 @@ app.post("/login", async (req, res) => {
       const data = {
         user: {
           id: user.id,
-        },
-      };
-      const token = jwt.sign(data, "secret_ecom");
-      res.json({ success: true, token: "Bearer " + token });
-    } else {
+        }
+      }
+      const token = jwt.sign(data, 'secret_ecom')
+      res.json({ success: true, token: 'Bearer ' + token })
+    }
+    else {
       res.json({ success: false, errors: "Wrong Password" });
     }
-  } else {
+  }
+  else {
     res.status(400).json({ success: false, errors: "Wrong Email id" });
   }
-});
-app.get("/newcollections", async (req, res) => {
-  let products = await Product.find({});
+})
+app.get('/newcollections', async (req, res) => {
+  let products = await Product.find({})
   let newcollection = products.slice(1).slice(-8);
-  console.log("NewCollection Fetched");
+  console.log("NewCollection Fetched")
   res.send(newcollection);
-});
+
+})
 
 app.get("/popularinwomen", async (req, res) => {
   let products = await Product.find({ category: "women" });
@@ -356,20 +374,18 @@ const fetchUser = async (req, res, next) => {
   }
 };
 
-app.post("/addtocart", fetchUser, async (req, res) => {
+app.post('/addtocart', fetchUser, async (req, res) => {
   // setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }))
   // console.log(cartItems)
-  console.log("Added", req.body.itemId);
+  console.log("Added", req.body.itemId)
   let userData = await Users.findOne({ _id: req.user.id });
-  console.log(req.user.id);
-  if (userData.cartData[req.body.itemId] > 0)
-    userData.cartData[req.body.itemId] += 1;
-  await Users.findByIdAndUpdate(
-    { _id: req.user.id },
-    { cartData: userData.cartData }
-  );
-  res.status(200)("Added");
-});
+  console.log(req.user.id)
+  // if (userData.cartData[req.body.itemId] > 0)
+  userData.cartData[req.body.itemId] += 1;
+  await Users.findByIdAndUpdate({ _id: req.user.id }, { cartData: userData.cartData })
+  res.status(200)("Added")
+
+})
 
 app.post("/getcart", fetchUser, async (req, res) => {
   console.log("Getcart");
@@ -390,7 +406,7 @@ app.post("/removefromcart", fetchUser, async (req, res) => {
 });
 app.listen(port, (error) => {
   if (!error) {
-    console.log(`Server is running on ${port}`);
+    console.log(`Server is running on ${port}`)
   } else {
     console.log(`Error : ${error}`);
   }

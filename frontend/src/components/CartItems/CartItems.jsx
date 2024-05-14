@@ -22,7 +22,7 @@ const CartItems = () => {
     });
     setCartItemsDescription(updatedCartItemsDescription);
     console.log(cartItemsDescription)
-  }, [cartItems]);
+  }, []);
   const checkoutHandler = async () => {
     try {
       const res = await fetch("http://localhost:4000/checkout", {
@@ -36,10 +36,7 @@ const CartItems = () => {
       const result = await res.json()
       console.log(result)
       alert(result.response.Status + '\n' + result.response.Info);
-      // const recent_log = await fetch("http://localhost:4000/recentlyAddedUser");
 
-      // const response = await recent_log.json()
-      // console.log(response)
 
     } catch (error) {
       console.error('Error during checkout:', error, "this is the error");
