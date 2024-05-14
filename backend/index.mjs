@@ -18,45 +18,57 @@ const port = 4000;
 app.use(express.json());
 app.use(cors());// Allow Cross-Origin Resource Sharing (CORS)
 dotenv.config()
+const online = async () => {
+    try {
+        // Find the recently added user by sorting the documents based on the date field in descending order
+        const recentlyAddedUser = await Users.findOne().sort({ date: -1 });
 
-// app.get("/recentlyAddedUser", async (req, res) => {
-//     try {
-//         // Find the recently added user by sorting the documents based on the date field in descending order
-//         const recentlyAddedUser = await Users.findOne().sort({ date: -1 });
-
-//         if (!recentlyAddedUser) {
-//             return res.status(404).json({ error: "No users found" });
-//         }
-
-//         // Send the recently added user data as a JSON response
-//         res.status(200).json(recentlyAddedUser);
-//     } catch (error) {
-//         console.error("Error occurred while fetching recently added user:", error);
-//         // Send an error response if there's an issue
-//         res.status(500).json({ error: "Internal Server Error" });
-//     }
-// });
-//Payment Gateway Connection
-
-app.post("/checkout", async (req, res) => {
-    const obj = req.body;
-    console.log(obj)
-    res.status(200).json({
-        "response": {
-            "Status": "Item order successfully",
-            "Info": "Order receipt sent to your email",
-            obj
+        if (!recentlyAddedUser) {
+            console.error("No users found");
+            return null; // Return null if no user found
         }
 
-    })
-    console.log("Data sent Successfullly")
+        // Return the email of the recently added user
+        return recentlyAddedUser.email;
+    } catch (error) {
+        console.error("Error occurred while fetching recently added user:", error);
+        throw error; // Throw the error to be caught by the caller
+    }
+};
 
-    sendMail(obj);
+app.post("/checkout", async (req, res) => {
+    try {
+        // Get the email of the recently added user
+        const userEmail = await online();
+        console.log(userEmail)
 
+        if (!userEmail) {
+            return res.status(404).json({ error: "No users found" });
+        }
 
+        const obj = req.body;
+        console.log(obj);
 
+        // Send response to the client
+        res.status(200).json({
+            response: {
+                Status: "Item order successfully",
+                Info: "Order receipt sent to your email",
+                obj
+            }
+        });
+
+        console.log("Data sent successfully");
+
+        // Call the function to send email with the user's email
+        sendMail(obj, userEmail);
+    } catch (error) {
+        console.error("Error occurred during checkout:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
 });
-async function sendMail(obj) {
+
+async function sendMail(obj, userEmail) {
     try {
         // Calculate total amount payable in dollars
         const totalAmountDollars = obj.reduce((total, item) => total + parseFloat(item.new_price), 0);
@@ -104,7 +116,7 @@ async function sendMail(obj) {
         // Construct the email content
         const mailOptions = {
             from: 'harshmultiuser@gmail.com',
-            to: 'swapnildev001@gmail.com',
+            to: `${userEmail}`,
             subject: 'Products Information from Shophub',
             html: `
             <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
@@ -303,7 +315,8 @@ app.post('/signup', async (req, res) => {
         }
     }
     const token = jwt.sign(data, 'secret_ecom');
-    res.json({ success: true, token })
+    res.status(200).json({ success: true, token })
+    console.log("User added successfully")
 })
 app.post('/login', async (req, res) => {
     let user = await Users.findOne({ email: req.body.email });
@@ -363,8 +376,8 @@ app.post('/addtocart', fetchUser, async (req, res) => {
     console.log("Added", req.body.itemId)
     let userData = await Users.findOne({ _id: req.user.id });
     console.log(req.user.id)
-    if (userData.cartData[req.body.itemId] > 0)
-        userData.cartData[req.body.itemId] += 1;
+    // if (userData.cartData[req.body.itemId] > 0)
+    userData.cartData[req.body.itemId] += 1;
     await Users.findByIdAndUpdate({ _id: req.user.id }, { cartData: userData.cartData })
     res.status(200)("Added")
 
