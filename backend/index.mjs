@@ -166,26 +166,33 @@ db.once("open", function () {
 //Api Creation
 
 app.get("/", (req, res) => {
+
   res.send("Hello World!");
 });
 
-//Image Storage Engine
-var storage = multer.diskStorage({
-  destination: "./upload/images", // Folder to store the uploaded files in
+// Set up storage engine
+const storage = multer.diskStorage({
+  destination: './upload/images', // Folder to store the uploaded files
   filename: function (req, file, cb) {
     // Generate a unique file name using file's original name with the extension
-    return cb(
+    cb(
       null,
-      `${file.fieldname}_${Date.now()}${path.extname(file.originalname)} `
+      `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`
     );
   },
 });
 
+// Initialize upload with the storage engine
 const upload = multer({ storage: storage });
 
-//Creating Upload Endpoint for image
-app.use("/images", express.static("upload/images"));
-app.post("/upload", upload.single("product"), (req, res) => {
+// Serve static files from the 'upload/images' directory
+app.use('/images', express.static('./upload/images'));
+
+// Create upload endpoint for images
+app.post('/upload', upload.single('product'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: 0, message: 'No file uploaded' });
+  }
   res.json({
     success: 1,
     image_url: `http://localhost:${port}/images/${req.file.filename}`,
