@@ -48,6 +48,7 @@ const ShopContextProvider = (props) => {
           'auth-token': `${localStorage.getItem('auth-token')}`,
           'Content-Type': 'application/json',
         },
+
         body: JSON.stringify({ "itemId": itemId })
       })
         .then(res => {
@@ -60,7 +61,8 @@ const ShopContextProvider = (props) => {
           console.log(data, "hi")
         })
         .catch(error => {
-          console.error('Error fetching data:', error);
+          console.error('Error fetching data:', error, itemId);
+          // console.log(itemId)
         });
     }
   }

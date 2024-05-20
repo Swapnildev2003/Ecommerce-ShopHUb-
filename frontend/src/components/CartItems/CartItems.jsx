@@ -1,11 +1,13 @@
 import React, { useContext, useState, useEffect } from "react";
 import "./CartItems.css";
+import Checkout from "../checkout/checkout"
 import { ShopContext } from "../../Context/ShopContext";
 import remove_icon from "../Assets/cart_cross_icon.png";
 
 const CartItems = () => {
   const { getTotalCartAmount, all_product, cartItems, removeFromCart } = useContext(ShopContext);
   const [cartItemsDescription, setCartItemsDescription] = useState([]);
+  // const [final_cart, initial_cart] = useState(0);
   useEffect(() => {
     const updatedCartItemsDescription = [];
 
@@ -16,33 +18,14 @@ const CartItems = () => {
           image: `images/${e.image}`,
           name: e.name,
           new_price: `${e.new_price} $`,
-
+          date: e.date
         });
       }
     });
     setCartItemsDescription(updatedCartItemsDescription);
     console.log(cartItemsDescription)
   }, []);
-  const checkoutHandler = async () => {
-    try {
-      const res = await fetch("http://localhost:4000/checkout", {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(cartItemsDescription),
-      });
 
-      const result = await res.json()
-      console.log(result)
-      alert(result.response.Status + '\n' + result.response.Info);
-
-
-    } catch (error) {
-      console.error('Error during checkout:', error, "this is the error");
-
-    }
-  }
 
   return (
     <div className="cartitems">
@@ -93,7 +76,8 @@ const CartItems = () => {
               <h3>₹{getTotalCartAmount()}</h3>
             </div>
           </div>
-          <button onClick={checkoutHandler}>PROCEED TO CHECKOUT</button>
+          {/* <button onClick={checkoutHandler}>PROCEED TO CHECKOUT</button> */}
+          <Checkout cartItemsDescription={cartItemsDescription} />
         </div>
         <div className="cartitems-promocode">
           <p>If you have a promo code, Enter it here</p>

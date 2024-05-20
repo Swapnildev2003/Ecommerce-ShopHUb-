@@ -17,6 +17,30 @@ const port = 4000;
 app.use(express.json());
 app.use(cors());// Allow Cross-Origin Resource Sharing (CORS)
 dotenv.config()
+//rental system
+app.post("/rental", async (req, res) => {
+  try {
+    const { rentalPeriod, productId } = req.body;
+
+    // Update the date field of the product document based on the provided rentalPeriod and productId
+    const updatedProduct = await Product.findOneAndUpdate(
+      { _id: productId }, // Query to find the product document by its ID
+      { date: rentalPeriod }, // Update to set the date field
+      { new: true } // Options to return the modified document
+    );
+
+    if (!updatedProduct) {
+      // Handle the case where no product was found
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    console.log(updatedProduct);
+    res.status(200).json({ rentalPeriod, productId });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 const online = async () => {
   try {
     // Find the recently added user by sorting the documents based on the date field in descending order
@@ -67,14 +91,12 @@ app.post("/checkout", async (req, res) => {
   }
 });
 
-async function sendMail(obj, userEmail) {
+async function sendMail(orderDetails, userEmail) {
   try {
     // Calculate total amount payable in dollars
-    const totalAmountDollars = obj.reduce((total, item) => total + parseFloat(item.new_price), 0);
+    const totalAmountRupees = orderDetails.products.reduce((total, item) => total + parseFloat(item.new_price), 0);
 
-    // Convert total amount from dollars to rupees (considering 1 USD = 75 INR for example)
-    const conversionRate = 75; // Example conversion rate: 1 USD = 75 INR
-    const totalAmountRupees = totalAmountDollars * conversionRate;
+
 
     // Create a PDF document
     const doc = new PDFDocument();
@@ -86,27 +108,32 @@ async function sendMail(obj, userEmail) {
     doc.text("Ordered Items Receipt", { align: "center" });
     doc.moveDown();
 
-    // Write content to the PDF
-    doc.fontSize(18);
-    obj.forEach((item, index) => {
-      const imageUrl = item.image.substring(7);
-      doc
-        .fillColor("#333")
-        .text(`Item ${index + 1}:`, { continued: true })
-        .fillColor("#666")
-        .text(item.name);
-      doc.fillColor("#333").text(`ID: ${item.id}`);
-      doc.fillColor("#333").text(`Price: ${item.new_price}`);
+    // Write checkout details
+    doc.fillColor("#333").text("Checkout Details:");
+    doc.fillColor("#333").text(`Name: ${orderDetails.name}`);
+    doc.fillColor("#333").text(`Email: ${orderDetails.email}`);
+    doc.fillColor("#333").text(`Address: ${orderDetails.address}`);
+    doc.fillColor("#333").text(`City: ${orderDetails.city}`);
+    doc.fillColor("#333").text(`State: ${orderDetails.state}`);
+    doc.fillColor("#333").text(`Zip: ${orderDetails.zip}`);
+
+    doc.moveDown();
+
+    // Write content for each product
+    doc.fillColor("#333").text("Ordered Products:");
+    orderDetails.products.forEach((product, index) => {
+      const imageUrl = product.image.substring(7);
+      doc.fillColor("#333").text(`Item ${index + 1}:`);
+      doc.fillColor("#333").text(`Name: ${product.name}`);
+      doc.fillColor("#333").text(`ID: ${product.id}`);
+      doc.fillColor("#333").text(`Rental period: ${product.date} days`);
+      doc.fillColor("#333").text(`Price: ${totalAmountRupees}`);
       doc.fillColor("#333").text(`Image: ${imageUrl}`);
       doc.moveDown();
     });
 
     // Display total amount payable in rupees
-    doc
-      .fillColor("#333")
-      .text(`Total Amount Payable: ₹${totalAmountRupees.toFixed(2)}`, {
-        align: "right",
-      });
+    doc.fillColor("#333").text(`Total Amount Payable: ₹${totalAmountRupees.toFixed(2)}`, { align: "right" });
 
     // End the PDF document
     doc.end();
@@ -123,7 +150,7 @@ async function sendMail(obj, userEmail) {
     // Construct the email content
     const mailOptions = {
       from: 'harshmultiuser@gmail.com',
-      to: `${userEmail}`,
+      to: `${orderDetails.email}`,
       subject: 'Products Information from Shophub',
       html: `
             <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
@@ -150,7 +177,6 @@ async function sendMail(obj, userEmail) {
     console.error("Error occurred while sending email:", error);
   }
 }
-
 //databave connection
 
 const URI =
@@ -227,8 +253,8 @@ const Product = mongoose.model("Product", {
     required: true,
   },
   date: {
-    type: Date,
-    default: Date.now,
+    type: Number,
+    default: null,
   },
   available: {
     type: Boolean,
