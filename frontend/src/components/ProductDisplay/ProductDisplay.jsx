@@ -1,8 +1,7 @@
-<<<<<<< HEAD
+
+// import React, { useContext, useState, useEffect } from "react";
 import React, { useContext, useState, useEffect } from "react";
-=======
-import React, { useContext, useState } from "react";
->>>>>>> 269113bf2ef3af32ce7cb97e2abd8ad76b0498d9
+
 import "./ProductDisplay.css";
 import star_icon from "../Assets/star_icon.png";
 import star_dull_icon from "../Assets/star_dull_icon.png";
@@ -10,10 +9,11 @@ import { ShopContext } from "../../Context/ShopContext";
 
 const ProductDisplay = (props) => {
   const { product } = props;
-<<<<<<< HEAD
   const { addToCart } = useContext(ShopContext);
   const [display, setDisplay] = useState(false);
-  const [rentalPeriod, setRentalPeriod] = useState("1 day");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  // const [rentalPeriod, setRentalPeriod] = useState("1 day");
   useEffect(() => {
     if (props.product.category === "rent-dress-here") {
       setDisplay(true);
@@ -21,20 +21,23 @@ const ProductDisplay = (props) => {
     console.log(props.product, "he i am here")
   }, [props.category]);
 
-  const handleRentalPeriodChange = (e) => {
-    setRentalPeriod(e.target.value);
-  };
+  // const handleRentalPeriodChange = (e) => {
+  //   setRentalPeriod(e.target.value);
+  // };
 
-  const fetchData = async (rentalPeriod) => {
+  const fetchData = async () => {
     try {
-      console.log(rentalPeriod);
+      // console.log(rentalPeriod);
       const res = await fetch("http://localhost:4000/rental", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          rentalPeriod: rentalPeriod,
+          rentalPeriod: {
+            startDate,
+            endDate
+          },
           productId: props.product._id
         })
       });
@@ -47,22 +50,28 @@ const ProductDisplay = (props) => {
 
   // Now use fetchData inside useEffect
   useEffect(() => {
-    console.log(rentalPeriod);
-    fetchData(rentalPeriod); // Pass rentalPeriod as an argument
-  }, [rentalPeriod]);
-=======
-  console.log(product.category);
-  const { addToCart } = useContext(ShopContext);
+    if (startDate && endDate) {
+      console.log("rental called")
+      fetchData();
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+    }
+
+
+  }, [startDate, endDate]);
+
+  // console.log(product.category);
+  // const { addToCart } = useContext(ShopContext);
+
+
 
   const handleStartDateChange = (event) => {
-    setStartDate(event.target.value);
+    setStartDate((event.target.value));
+    console.log(new Date(startDate))
   };
 
   const handleEndDateChange = (event) => {
-    setEndDate(event.target.value);
+    setEndDate((event.target.value));
+    console.log(new Date(endDate))
   };
 
   const handleAddToCart = () => {
@@ -82,8 +91,8 @@ const ProductDisplay = (props) => {
       addToCart(product.id);
     }
   };
-  
->>>>>>> 269113bf2ef3af32ce7cb97e2abd8ad76b0498d9
+
+
   return (
     <div className="productdisplay">
       <div className="productdisplay-left">
@@ -109,11 +118,7 @@ const ProductDisplay = (props) => {
         </div>
         <div className="productdisplay-right-prices">
           <div className="productdisplay-right-price-old">
-<<<<<<< HEAD
             <s>  ₹{product.old_price}</s>
-=======
-            <s> ₹{product.old_price}</s>
->>>>>>> 269113bf2ef3af32ce7cb97e2abd8ad76b0498d9
           </div>
           <div className="productdisplay-right-price-new">
             ₹ {product.new_price}
@@ -133,23 +138,8 @@ const ProductDisplay = (props) => {
             <div>XXL</div>
           </div>
         </div>
-<<<<<<< HEAD
         {display && (
-          <div className="rental-options">
-            <label htmlFor="rental-period">Select Rental Period:</label>
-            <select id="rental-period" value={rentalPeriod} onChange={handleRentalPeriodChange} >
-              <option value="1">1 Day</option>
-              <option value="3">3 Days</option>
-              <option value="7">1 Week</option>
-              <option value="30">1 Month</option>
-            </select>
-          </div>
-        )}
-        <button onClick={() => { addToCart(product.id) }}>Add to Cart</button>
 
-=======
-
-        {product.category === "rent-dress-here" && (
           <div className="productdisplay-right-size">
             <h1>Renting Dates</h1>
             <div className="productdisplay-right-sizes">
@@ -176,7 +166,6 @@ const ProductDisplay = (props) => {
         )}
 
         <button onClick={handleAddToCart}>Add to Cart</button>
->>>>>>> 269113bf2ef3af32ce7cb97e2abd8ad76b0498d9
         <p className="productdisplay-right-category">
           <span>Category :</span>Women, T-Shirt, Crop-Top,
         </p>
@@ -185,6 +174,7 @@ const ProductDisplay = (props) => {
         </p>
       </div>
     </div>
+
   );
 };
 

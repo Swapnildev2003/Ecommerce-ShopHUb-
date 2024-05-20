@@ -12,13 +12,23 @@ const CartItems = () => {
     const updatedCartItemsDescription = [];
 
     all_product.forEach((e) => {
+      console.log(e._id, "i am here brother")
       if (cartItems[e.id] > 0) {
+        let rentalPeriod = e.rentalPeriod; // Assuming rentalPeriod is already an object
+        if (rentalPeriod) {
+          rentalPeriod = {
+            startDate: rentalPeriod.startDate, // Assuming startDate is a string
+            endDate: rentalPeriod.endDate      // Assuming endDate is a string
+          };
+        }
         updatedCartItemsDescription.push({
+          _id: e._id,
           id: e.id,
           image: `images/${e.image}`,
           name: e.name,
           new_price: `${e.new_price} $`,
-          date: e.date
+          rental: e.isRental,
+          rentalPeriod: rentalPeriod // Push modified rentalPeriod object
         });
       }
     });
