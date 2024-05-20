@@ -25,9 +25,9 @@ const Navbar = () => {
       <ul ref={menuRef} className="nav-menu">
         <li onClick={() => { setMenu("shops") }}><Link style={{ textDecoration: 'none' }} to='/'>Shop</Link>{menu === "shop" ? <hr /> : <></>} </li>
 
-        <li onClick={() => { setMenu("men") }} ><Link style={{ textDecoration: 'none' }} to="/mens">Mens </Link> {menu === "men" ? <hr /> : <></>}</li>
+        <li onClick={() => { setMenu("men") }} ><Link style={{ textDecoration: 'none' }} to="/mens">Men</Link> {menu === "men" ? <hr /> : <></>}</li>
 
-        <li onClick={() => { setMenu("women"); }}><Link style={{ textDecoration: 'none' }} to="/womens">Womens </Link>{menu === "women" ? <hr /> : <></>}</li>
+        <li onClick={() => { setMenu("women"); }}><Link style={{ textDecoration: 'none' }} to="/womens">Women</Link>{menu === "women" ? <hr /> : <></>}</li>
 
         <li onClick={() => { setMenu("kid"); }}><Link style={{ textDecoration: 'none' }} to="/kids">Kids</Link> {menu === "kid" ? <hr /> : <></>}</li>
 

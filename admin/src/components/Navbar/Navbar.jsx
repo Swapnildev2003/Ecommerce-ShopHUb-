@@ -3,6 +3,7 @@ import './Navbar.css';
 import navlogo from '../../assets/nav-logo.svg';
 import navProfile from '../../assets/nav-profile.svg';
 
+
 /**
  * Component for rendering the navigation bar.
  */

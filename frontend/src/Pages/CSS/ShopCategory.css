@@ -28,10 +28,7 @@
   row-gap: 60px;
   align-items: center;
   justify-content: center;
-
-
-  /*extra*/
-  /* column-gap: 30px; extra*/
+  
 }
 
 .shopcategory-loadmore {
@@ -131,6 +128,7 @@ button:hover {
     width: 90%;
     margin: 10px auto;
     row-gap: 40;
+  
   }
 
   .shopcategory-products .item {
