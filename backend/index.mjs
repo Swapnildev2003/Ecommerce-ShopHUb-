@@ -148,7 +148,7 @@ async function sendMail(orderDetails) {
       doc.fillColor("#333").text(`Name: ${product.name}`);
       doc.fillColor("#333").text(`ID: ${product.id}`);
       if (product.rental) { // Check if the product is a rental
-        doc.fillColor("#333").text(`Rental period: ${product.rentalPeriod[index].startDate} - ${product.rentalPeriod[index].endDate}`);
+        doc.fillColor("#333").text(`Rental period: ${product.rentalPeriod.startDate} - ${product.rentalPeriod.endDate}`);
       }
 
       doc.fillColor("#333").text(`Price: ${totalAmountRupees}`);
