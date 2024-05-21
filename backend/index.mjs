@@ -17,6 +17,38 @@ const port = 4000;
 app.use(express.json());
 app.use(cors());// Allow Cross-Origin Resource Sharing (CORS)
 dotenv.config()
+//rental system
+app.post("/rental", async (req, res) => {
+  try {
+    const { rentalPeriod, productId } = req.body;
+
+    const startDate = new Date(rentalPeriod.startDate).toISOString().split('T')[0];
+    const endDate = new Date(rentalPeriod.endDate).toISOString().split('T')[0];
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      {
+        $set: {
+          'rentalPeriod.startDate': startDate,
+          'rentalPeriod.endDate': endDate,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.status(200).json({ rentalPeriod: updatedProduct.rentalPeriod, productId });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ error: error.message }); // Log the detailed error message
+  }
+});
+
+
+
 const online = async () => {
   try {
     // Find the recently added user by sorting the documents based on the date field in descending order
@@ -39,6 +71,7 @@ app.post("/checkout", async (req, res) => {
   try {
     // Get the email of the recently added user
     const userEmail = await online();
+
     console.log(userEmail)
 
     if (!userEmail) {
@@ -46,7 +79,18 @@ app.post("/checkout", async (req, res) => {
     }
 
     const obj = req.body;
-    console.log(obj);
+    const products = obj.products;
+
+    // Fetch rentalPeriod data for each product
+    for (let i = 0; i < products.length; i++) {
+      const id = products[i]._id;
+      const product = await Product.findOne({ _id: id });
+      if (product) {
+        products[i].rentalPeriod = product.rentalPeriod; // Replace rentalPeriod with fetched data
+      }
+    }
+
+    console.log(obj.products[0]);
 
     // Send response to the client
     res.status(200).json({
@@ -67,14 +111,13 @@ app.post("/checkout", async (req, res) => {
   }
 });
 
-async function sendMail(obj, userEmail) {
+
+async function sendMail(orderDetails) {
   try {
     // Calculate total amount payable in dollars
-    const totalAmountDollars = obj.reduce((total, item) => total + parseFloat(item.new_price), 0);
+    const totalAmountRupees = orderDetails.products.reduce((total, item) => total + parseFloat(item.new_price), 0);
 
-    // Convert total amount from dollars to rupees (considering 1 USD = 75 INR for example)
-    const conversionRate = 75; // Example conversion rate: 1 USD = 75 INR
-    const totalAmountRupees = totalAmountDollars * conversionRate;
+
 
     // Create a PDF document
     const doc = new PDFDocument();
@@ -86,27 +129,35 @@ async function sendMail(obj, userEmail) {
     doc.text("Ordered Items Receipt", { align: "center" });
     doc.moveDown();
 
-    // Write content to the PDF
-    doc.fontSize(18);
-    obj.forEach((item, index) => {
-      const imageUrl = item.image.substring(7);
-      doc
-        .fillColor("#333")
-        .text(`Item ${index + 1}:`, { continued: true })
-        .fillColor("#666")
-        .text(item.name);
-      doc.fillColor("#333").text(`ID: ${item.id}`);
-      doc.fillColor("#333").text(`Price: ${item.new_price}`);
+    // Write checkout details
+    doc.fillColor("#333").text("Checkout Details:");
+    doc.fillColor("#333").text(`Name: ${orderDetails.name}`);
+    doc.fillColor("#333").text(`Email: ${orderDetails.email}`);
+    doc.fillColor("#333").text(`Address: ${orderDetails.address}`);
+    doc.fillColor("#333").text(`City: ${orderDetails.city}`);
+    doc.fillColor("#333").text(`State: ${orderDetails.state}`);
+    doc.fillColor("#333").text(`Zip: ${orderDetails.zip}`);
+
+    doc.moveDown();
+
+    // Write content for each product
+    doc.fillColor("#333").text("Ordered Products:");
+    orderDetails.products.forEach((product, index) => {
+      const imageUrl = product.image.substring(7);
+      doc.fillColor("#333").text(`Item ${index + 1}:`);
+      doc.fillColor("#333").text(`Name: ${product.name}`);
+      doc.fillColor("#333").text(`ID: ${product.id}`);
+      if (product.rental) { // Check if the product is a rental
+        doc.fillColor("#333").text(`Rental period: ${product.rentalPeriod[index].startDate} - ${product.rentalPeriod[index].endDate}`);
+      }
+
+      doc.fillColor("#333").text(`Price: ${totalAmountRupees}`);
       doc.fillColor("#333").text(`Image: ${imageUrl}`);
       doc.moveDown();
     });
 
     // Display total amount payable in rupees
-    doc
-      .fillColor("#333")
-      .text(`Total Amount Payable: ₹${totalAmountRupees.toFixed(2)}`, {
-        align: "right",
-      });
+    doc.fillColor("#333").text(`Total Amount Payable: ₹${totalAmountRupees.toFixed(2)}`, { align: "right" });
 
     // End the PDF document
     doc.end();
@@ -123,7 +174,7 @@ async function sendMail(obj, userEmail) {
     // Construct the email content
     const mailOptions = {
       from: 'harshmultiuser@gmail.com',
-      to: `${userEmail}`,
+      to: `${orderDetails.email}`,
       subject: 'Products Information from Shophub',
       html: `
             <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
@@ -150,7 +201,6 @@ async function sendMail(obj, userEmail) {
     console.error("Error occurred while sending email:", error);
   }
 }
-
 //databave connection
 
 const URI =
@@ -234,37 +284,70 @@ const Product = mongoose.model("Product", {
     type: Boolean,
     default: true,
   },
+  isRental: {
+    type: Boolean,
+    default: false, // Default to false for non-rental products
+  },
+  rentalPeriod: {
+    startDate: {
+      type: String,
+      default: null,
+    },
+    endDate: {
+      type: String,
+      default: null,
+    },
+  },
 });
+
 
 // Add Product
 
 app.post("/addProduct", async (req, res) => {
-  let products = await Product.find({});
-  let id;
-  if (products.length > 0) {
-    let last_products_array = products.slice(-1);
-    let last_product = last_products_array[0];
-    id = last_product.id + 1;
-  } else {
-    id = 1;
+  try {
+    // Fetch all products to determine the next ID
+    let products = await Product.find({});
+    let id;
+    if (products.length > 0) {
+      let last_product = products[products.length - 1];
+      id = last_product.id + 1;
+    } else {
+      id = 1;
+    }
+
+    // Extract product details from the request body
+    const { name, image, category, new_price, old_price, isRental, rentalPeriod } = req.body;
+
+    // Create a new product object
+    const product = new Product({
+      id: id,
+      name: name,
+      image: image,
+      category: category,
+      new_price: new_price,
+      old_price: old_price,
+      available: true,
+      isRental: isRental,
+
+    });
+
+    console.log(product);
+
+    // Save the product to the database
+    await product.save();
+    console.log("saved");
+
+    // Respond with success
+    res.json({
+      success: true,
+      name: name,
+    });
+  } catch (error) {
+    console.error("Error adding product:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
-  const product = new Product({
-    id: id,
-    name: req.body.name,
-    image: req.body.image,
-    category: req.body.category,
-    new_price: req.body.new_price,
-    old_price: req.body.old_price,
-    available: true,
-  });
-  console.log(product);
-  await product.save();
-  console.log("saved");
-  res.json({
-    succsess: true,
-    name: req.body.name,
-  });
 });
+
 
 //Schema for creating user model
 const Users = mongoose.model("User", {

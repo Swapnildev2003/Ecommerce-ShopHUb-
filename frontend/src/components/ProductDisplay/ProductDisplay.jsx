@@ -1,4 +1,7 @@
-import React, { useContext, useState } from "react";
+
+// import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
+
 import "./ProductDisplay.css";
 import star_icon from "../Assets/star_icon.png";
 import star_dull_icon from "../Assets/star_dull_icon.png";
@@ -6,18 +9,69 @@ import { ShopContext } from "../../Context/ShopContext";
 
 const ProductDisplay = (props) => {
   const { product } = props;
-  console.log(product.category);
   const { addToCart } = useContext(ShopContext);
-
+  const [display, setDisplay] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  // const [rentalPeriod, setRentalPeriod] = useState("1 day");
+  useEffect(() => {
+    if (props.product.category === "rent-dress-here") {
+      setDisplay(true);
+    }
+    console.log(props.product, "he i am here")
+  }, [props.category]);
+
+  // const handleRentalPeriodChange = (e) => {
+  //   setRentalPeriod(e.target.value);
+  // };
+
+  const fetchData = async () => {
+    try {
+      // console.log(rentalPeriod);
+      const res = await fetch("http://localhost:4000/rental", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rentalPeriod: {
+            startDate,
+            endDate
+          },
+          productId: props.product._id
+        })
+      });
+      const data = await res.json(); // Assuming response is JSON
+      console.log(data); // Log the response data
+    } catch (error) {
+      console.error("Error fetching rental data:", error);
+    }
+  };
+
+  // Now use fetchData inside useEffect
+  useEffect(() => {
+    if (startDate && endDate) {
+      console.log("rental called")
+      fetchData();
+
+    }
+
+
+  }, [startDate, endDate]);
+
+  // console.log(product.category);
+  // const { addToCart } = useContext(ShopContext);
+
+
 
   const handleStartDateChange = (event) => {
-    setStartDate(event.target.value);
+    setStartDate((event.target.value));
+    console.log(new Date(startDate))
   };
 
   const handleEndDateChange = (event) => {
-    setEndDate(event.target.value);
+    setEndDate((event.target.value));
+    console.log(new Date(endDate))
   };
 
   const handleAddToCart = () => {
@@ -37,7 +91,8 @@ const ProductDisplay = (props) => {
       addToCart(product.id);
     }
   };
-  
+
+
   return (
     <div className="productdisplay">
       <div className="productdisplay-left">
@@ -63,7 +118,7 @@ const ProductDisplay = (props) => {
         </div>
         <div className="productdisplay-right-prices">
           <div className="productdisplay-right-price-old">
-            <s> ₹{product.old_price}</s>
+            <s>  ₹{product.old_price}</s>
           </div>
           <div className="productdisplay-right-price-new">
             ₹ {product.new_price}
@@ -83,8 +138,8 @@ const ProductDisplay = (props) => {
             <div>XXL</div>
           </div>
         </div>
+        {display && (
 
-        {product.category === "rent-dress-here" && (
           <div className="productdisplay-right-size">
             <h1>Renting Dates</h1>
             <div className="productdisplay-right-sizes">
@@ -119,6 +174,7 @@ const ProductDisplay = (props) => {
         </p>
       </div>
     </div>
+
   );
 };
 

@@ -1,18 +1,21 @@
-
 import React from 'react';
 import './AddProduct.css';
 import upload_area from "../../assets/upload_area.svg";
 
 const AddProduct = () => {
     const [image, setImage] = React.useState(false);
-    const [productDetail, setProductDetail] = React.useState({ name: "", image: "", category: "women", new_price: "", old_price: "" });  // product detail object to store the input
+    const [productDetail, setProductDetail] = React.useState({ name: "", image: "", category: "women", new_price: "", old_price: "", isRental: false });
 
     const imageHandler = (e) => {
         setImage(e.target.files[0]);
     };
 
     const changeHandler = (e) => {
-        setProductDetail({ ...productDetail, [e.target.name]: e.target.value });
+        const { name, value, type, checked } = e.target;
+        setProductDetail(prevState => ({
+            ...prevState,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     const Add_Product = async () => {
@@ -46,7 +49,7 @@ const AddProduct = () => {
                 body: JSON.stringify(product),
             })
                 .then((resp) => resp.json())
-                .then((data) => data.succsess ? alert("Successfully added the Product") : alert(" Not  added the Product"))
+                .then((data) => data.succsess ? alert("Successfully added the Product") : alert(" Not added the Product"))
 
         }
     };
@@ -75,6 +78,10 @@ const AddProduct = () => {
                     <option value='kid'>kid</option>
                     <option value='rent-dress-here'>rent-dress-here</option>
                 </select>
+            </div>
+            <div className='addproduct-itemfield'>
+                <p>Is Rental?</p>
+                <input type='checkbox' name='isRental' checked={productDetail.isRental} onChange={changeHandler} />
             </div>
             <div className='addproduct-itemfield'>
                 <label htmlFor='file-input'>
