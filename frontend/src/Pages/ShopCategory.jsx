@@ -7,6 +7,7 @@ import Item from '../components/Item/Item';
 const ShopCategory = (props) => {
   const { all_product } = useContext(ShopContext);
   const [showAllProducts, setShowAllProducts] = useState(false);
+  const [sortOption, setSortOption] = useState('default');
 
   const rentalOptions = [
     { value: "1", label: "1 Day" },
@@ -22,6 +23,27 @@ const ShopCategory = (props) => {
 
   let show_item = all_product.filter((current_value) => current_value['category'] === props.category);
 
+  const sortProducts = (products, option) => {
+    switch (option) {
+      case 'priceLowHigh':
+        return products.sort((a, b) => a.new_price - b.new_price);
+      case 'priceHighLow':
+        return products.sort((a, b) => b.new_price - a.new_price);
+      case 'nameAZ':
+        return products.sort((a, b) => a.name.localeCompare(b.name));
+      case 'nameZA':
+        return products.sort((a, b) => b.name.localeCompare(a.name));
+      default:
+        return products;
+    }
+  };
+
+  const handleSortChange = (event) => {
+    setSortOption(event.target.value);
+  };
+
+  show_item = sortProducts(show_item, sortOption);
+
   return (
     <div className='shop-category'>
       <img className='shopcategory-banner' src={props.banner} alt="" />
@@ -30,27 +52,28 @@ const ShopCategory = (props) => {
           <span>Showing {show_item.length}</span> out of {show_item.length} products
         </p>
         <div className="shopcategory-sort">
-          sort by <img src={dropdown_icon} alt="" />
+          Sort by
+          <select value={sortOption} onChange={handleSortChange}>
+            <option value="default">Default</option>
+            <option value="priceLowHigh">Price: Low to High</option>
+            <option value="priceHighLow">Price: High to Low</option>
+            <option value="nameAZ">Name: A to Z</option>
+            <option value="nameZA">Name: Z to A</option>
+          </select>
         </div>
       </div>
       <div className="shopcategory-products" style={{ maxHeight: (showAllProducts) ? "none" : "70vh", overflow: showAllProducts ? "visible" : "hidden" }}>
-        {all_product.map((item, i) => {
-          if (props.category === item.category) {
-            return (
-              <Item
-                key={i}
-                id={item.id}
-                name={item.name}
-                image={item.image}
-                new_price={item.new_price}
-                old_price={item.old_price}
-                category={props.category}
-              />
-            );
-          } else {
-            return null;
-          }
-        })}
+        {show_item.map((item, i) => (
+          <Item
+            key={i}
+            id={item.id}
+            name={item.name}
+            image={item.image}
+            new_price={item.new_price}
+            old_price={item.old_price}
+            category={props.category}
+          />
+        ))}
       </div>
       <div className="shopcategory-loadmore" onClick={() => {
         if (show_item.length > 4) {
