@@ -1,24 +1,25 @@
 import React, { useContext, useState, useEffect } from "react";
 import "./CartItems.css";
-import Checkout from "../checkout/checkout"
+import Checkout from "../checkout/checkout";
 import { ShopContext } from "../../Context/ShopContext";
 import remove_icon from "../Assets/cart_cross_icon.png";
 
 const CartItems = () => {
   const { getTotalCartAmount, all_product, cartItems, removeFromCart } = useContext(ShopContext);
   const [cartItemsDescription, setCartItemsDescription] = useState([]);
-  // const [final_cart, initial_cart] = useState(0);
+  const [promoCode, setPromoCode] = useState("");
+  const [discountApplied, setDiscountApplied] = useState(false);
+
   useEffect(() => {
     const updatedCartItemsDescription = [];
 
     all_product.forEach((e) => {
-      console.log(e._id, "i am here brother")
       if (cartItems[e.id] > 0) {
-        let rentalPeriod = e.rentalPeriod; // Assuming rentalPeriod is already an object
+        let rentalPeriod = e.rentalPeriod;
         if (rentalPeriod) {
           rentalPeriod = {
-            startDate: rentalPeriod.startDate, // Assuming startDate is a string
-            endDate: rentalPeriod.endDate      // Assuming endDate is a string
+            startDate: rentalPeriod.startDate,
+            endDate: rentalPeriod.endDate
           };
         }
         updatedCartItemsDescription.push({
@@ -26,16 +27,30 @@ const CartItems = () => {
           id: e.id,
           image: `images/${e.image}`,
           name: e.name,
-          new_price: `${e.new_price} $`,
+          new_price: discountApplied ? (e.new_price * 0.8).toFixed(2) : e.new_price.toFixed(2),
           rental: e.isRental,
-          rentalPeriod: rentalPeriod // Push modified rentalPeriod object
+          rentalPeriod: rentalPeriod
         });
       }
     });
     setCartItemsDescription(updatedCartItemsDescription);
-    console.log(cartItemsDescription)
-  }, []);
+  }, [discountApplied]);
 
+  const handlePromoCodeChange = (e) => {
+    setPromoCode(e.target.value);
+  };
+
+  const applyPromoCode = () => {
+    // Check if the entered promo code is valid and apply discount if valid
+    if (promoCode === "EXAMPLE20") { // Example promo code
+      setDiscountApplied(true); // Apply discount
+      setPromoCode(""); // Clear the promo code input field
+    }
+  };
+
+  const formatCurrency = (value) => {
+    return parseFloat(value).toFixed(2); // Convert value to float and limit to 2 decimal places
+  };
 
   return (
     <div className="cartitems">
@@ -50,16 +65,22 @@ const CartItems = () => {
       <hr />
       {all_product.map((e) => {
         if (cartItems[e.id] > 0) {
-
           return (
             <div key={e.id}>
               <div className="cartitems-format cartitems-format-main">
-                <img src={e.image} alt="" className='carticon-product-icon' />
+                <img src={e.image} alt="" className="carticon-product-icon" />
                 <p>{e.name}</p>
-                <p>₹{e.new_price}</p>
-                <button className='cartitems-quantity'>{cartItems[e.id]}</button>
-                <p>₹{e.new_price * cartItems[e.id]}</p>
-                <img className="cartitems-remove-icon" src={remove_icon} onClick={() => { removeFromCart(e.id) }} alt="" />
+                <p>₹{formatCurrency(e.new_price)}</p>
+                <button className="cartitems-quantity">{cartItems[e.id]}</button>
+                <p>₹{formatCurrency(e.new_price * cartItems[e.id])}</p>
+                <img
+                  className="cartitems-remove-icon"
+                  src={remove_icon}
+                  onClick={() => {
+                    removeFromCart(e.id);
+                  }}
+                  alt=""
+                />
               </div>
               <hr />
             </div>
@@ -73,7 +94,7 @@ const CartItems = () => {
           <div>
             <div className="cartitems-total-item">
               <p>Subtotal</p>
-              <p>₹{getTotalCartAmount()}</p>
+              <p>₹{formatCurrency(getTotalCartAmount())}</p>
             </div>
             <hr />
             <div className="cartitems-total-item">
@@ -83,18 +104,17 @@ const CartItems = () => {
             <hr />
             <div className="cartitems-total-item">
               <h3>Total</h3>
-              <h3>₹{getTotalCartAmount()}</h3>
+              <h3>₹{formatCurrency(discountApplied ? getTotalCartAmount() * 0.8 : getTotalCartAmount())}</h3> {/* Assuming 20% discount */}
             </div>
           </div>
-          {/* <button onClick={checkoutHandler}>PROCEED TO CHECKOUT</button> */}
-          <Checkout cartItemsDescription={cartItemsDescription} />
-        </div>
-        <div className="cartitems-promocode">
-          <p>If you have a promo code, Enter it here</p>
-          <div className="cartitems-promobox">
-            <input type="text" placeholder="promo code" />
-            <button>Submit</button>
+          <div className="cartitems-promocode">
+            <p>If you have a promo code, Enter it here</p>
+            <div className="cartitems-promobox">
+              <input type="text" placeholder="promo code" value={promoCode} onChange={handlePromoCodeChange} />
+              <button onClick={applyPromoCode}>Submit</button>
+            </div>
           </div>
+          <Checkout cartItemsDescription={cartItemsDescription} />
         </div>
       </div>
     </div>

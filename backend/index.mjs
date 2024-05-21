@@ -465,17 +465,29 @@ const fetchUser = async (req, res, next) => {
 };
 
 app.post('/addtocart', fetchUser, async (req, res) => {
-  // setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }))
-  // console.log(cartItems)
-  console.log("Added", req.body.itemId)
-  let userData = await Users.findOne({ _id: req.user.id });
-  console.log(req.user.id)
-  // if (userData.cartData[req.body.itemId] > 0)
-  userData.cartData[req.body.itemId] += 1;
-  await Users.findByIdAndUpdate({ _id: req.user.id }, { cartData: userData.cartData })
-  res.status(200)("Added")
+  try {
+    console.log("Added", req.body.itemId);
+    let userData = await Users.findOne({ _id: req.user.id });
+    console.log(userData);
 
-})
+    if (!userData) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (userData.cartData[req.body.itemId] > 0) {
+      userData.cartData[req.body.itemId] += 1;
+    } else {
+      userData.cartData[req.body.itemId] = 1;
+    }
+
+    await Users.findByIdAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
+    res.status(200).json({ message: "Added", userData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 
 app.post("/getcart", fetchUser, async (req, res) => {
   console.log("Getcart");
