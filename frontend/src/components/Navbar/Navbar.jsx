@@ -5,6 +5,7 @@ import cart_icon from "../Assets/cart_icon.png";
 import { Link } from "react-router-dom";
 import { ShopContext } from "../../Context/ShopContext";
 import nav_dropdown from "../Assets/nav_dropdown.png"
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [menu, setMenu] = useState("shop");
@@ -14,12 +15,16 @@ const Navbar = () => {
     menuRef.current.classList.toggle('nav-menu-visible');
     e.target.classList.toggle('open');
   }
+  const navigate = useNavigate(); // Call the hook here, at the top level of the component
 
+  const handleCheckNowClick = () => {
+    navigate("/");
+  };
   return (
     <div className="navbar">
       <div className="navbar-logo">
         <img src={logo} alt="" />
-        <p>ShopHub</p>
+        <p style={{ cursor: "pointer" }} onClick={handleCheckNowClick}>ShopHub</p>
       </div>
       <img className="nav-dropdown" onClick={dropdown_toggle} src={nav_dropdown} alt="" />
       <ul ref={menuRef} className="nav-menu">
