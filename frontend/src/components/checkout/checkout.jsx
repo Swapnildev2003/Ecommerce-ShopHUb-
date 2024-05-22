@@ -86,9 +86,9 @@ const Checkout = (props) => {
                                 <label htmlFor="state">State</label>
                                 <select id="state" name="state" value={formData.state} onChange={handleChange} required>
                                     <option value="">Choose...</option>
-                                    <option value="AL">Alabama</option>
-                                    <option value="CA">California</option>
-                                    <option value="NY">New York</option>
+                                    <option value="GK">Uttar Pradesh</option>
+                                    <option value="RJ">Rajasthan</option>
+                                    <option value="TP">Tripura</option>
                                     {/* Add more states as needed */}
                                 </select>
 
