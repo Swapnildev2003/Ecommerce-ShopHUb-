@@ -49,7 +49,7 @@ const AddProduct = () => {
                 body: JSON.stringify(product),
             })
                 .then((resp) => resp.json())
-                .then((data) => data.succsess ? alert("Successfully added the Product") : alert(" Not added the Product"))
+                .then((data) => data.success ? alert("Successfully added the Product") : alert(" Not added the Product"))
 
         }
     };
