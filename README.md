@@ -1,9 +1,4 @@
 # ShopHub E-Commerce website
-Sure, here's a README.md template for your eCommerce website using the MERN stack with Nodemailer for sending emails. You can customize it as per your specific project details.
-
----
-
-# eCommerce Website
 
 ## Introduction
 
