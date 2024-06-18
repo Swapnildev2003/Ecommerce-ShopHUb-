@@ -30,8 +30,8 @@ This is a full-stack eCommerce website built using the MERN (MongoDB, Express, R
 
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/Swapnildev2003/Ecommerce-ShopHUb-.git
+   cd Ecommerce-ShopHUb
    ```
 
 2. **Install dependencies for both client and server:**
